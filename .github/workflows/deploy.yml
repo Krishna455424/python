@@ -1,24 +1,29 @@
-name: Connect EC2
+name: EC2 SSH Test
 
 on:
   workflow_dispatch:
 
 jobs:
-  ssh:
+  connect:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup SSH Key
+      - name: Create SSH Key
         run: |
           echo "${{ secrets.EC2_SSH_KEY }}" > private_key.pem
           chmod 600 private_key.pem
 
-      - name: Connect to EC2
+      - name: Debug Secrets (safe check)
+        run: |
+          echo "HOST=${{ secrets.EC2_HOST }}"
+          echo "USER=${{ secrets.EC2_USER }}"
+
+      - name: SSH into EC2
         run: |
           ssh -o StrictHostKeyChecking=no \
-          -i private_key.pem \
-          ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} \
-          "hostname && uptime"
+            -i private_key.pem \
+            ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} \
+            "hostname && uptime"
