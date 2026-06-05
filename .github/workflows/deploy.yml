@@ -8,22 +8,19 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Create SSH Key
+      - name: Create Key
         run: |
           echo "${{ secrets.EC2_SSH_KEY }}" > private_key.pem
           chmod 600 private_key.pem
 
-      - name: Debug Secrets (safe check)
+      - name: Debug (optional)
         run: |
           echo "HOST=${{ secrets.EC2_HOST }}"
           echo "USER=${{ secrets.EC2_USER }}"
 
-      - name: SSH into EC2
+      - name: SSH
         run: |
           ssh -o StrictHostKeyChecking=no \
             -i private_key.pem \
             ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} \
-            "hostname && uptime"
+            "hostname"
