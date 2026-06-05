@@ -1,0 +1,35 @@
+name: Deploy and Run CPU Script
+
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # STEP 1: Get code from GitHub
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      # STEP 2: Create SSH key
+      - name: Setup SSH key
+        run: |
+          echo "${{ secrets.EC2_SSH_KEY }}" > key.pem
+          chmod 600 key.pem
+
+      # STEP 3: Copy file to EC2
+      - name: Copy script to EC2
+        run: |
+          scp -o StrictHostKeyChecking=no \
+          -i key.pem \
+          cpu_check.py \
+          ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:/home/ec2-user/
+
+      # STEP 4: Run script on EC2
+      - name: Run script on EC2
+        run: |
+          ssh -o StrictHostKeyChecking=no \
+          -i key.pem \
+          ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} \
+          "python3 /home/ec2-user/cpu_check.py"
